@@ -10,6 +10,8 @@ RUN git clone https://github.com/DNSPod/dnspod-sr \
   && cd dnspod-sr \
   && make
 
+COPY sr.conf /srv/dnspod-sr/sr.conf
+
 WORKDIR /srv/dnspod-sr/src
 
 CMD ./dnspod-sr
