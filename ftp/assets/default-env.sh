@@ -1,0 +1,7 @@
+export LANG=${LANG:-"C.UTF-8"}
+export LANGUAGE=${LANGUAGE:-"C.UTF-8"}
+export LC_ALL=${LC_ALL:-"C.UTF-8"}
+export PUBLIC_PASSWD=${PUBLIC_PASSWD:-"ftp"}
+export PRIVATE_USERNAME=${PRIVATE_USERNAME:-"lug"}
+export PRIVATE_PASSWD=${PRIVATE_PASSWD:-"password"}
+export PASV_ADDRESS=${PASV_ADDRESS:-"127.0.0.1"}
