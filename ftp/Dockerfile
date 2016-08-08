@@ -1,15 +1,21 @@
-FROM ustclug/debian
+FROM smartentry/debian:8-beta
 
-MAINTAINER Yifan Gao "git@gaoyifan.com"
+MAINTAINER Yifan Gao <docker@yfgao.com>
 
-COPY assets /etc/docker-assets
+ENV LANG="C.UTF-8" \
+    LANGUAGE="C.UTF-8"
+    LC_ALL="C.UTF-8" \
+    PUBLIC_PASSWD="ftp" \
+    PRIVATE_USERNAME="lug" \
+    PRIVATE_PASSWD="password" \
+    PASV_ADDRESS="127.0.0.1"
 
-COPY entrypoint/entrypoint.sh /sbin/entrypoint.sh
+COPY . $ASSETS_DIR
 
-RUN /sbin/entrypoint.sh build
+RUN smartentry.sh build
 
 EXPOSE 20-21 80 40000-40050
 
-ENTRYPOINT ["/sbin/entrypoint.sh"]
+ENTRYPOINT ["/sbin/smartentry.sh"]
 
 CMD ["/usr/bin/supervisord"]

@@ -1,3 +1,0 @@
-[submodule "ftp/entrypoint"]
-	path = ftp/entrypoint
-	url = https://github.com/gaoyifan/docker-entrypoint.git
