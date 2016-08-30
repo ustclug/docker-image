@@ -1,0 +1,140 @@
+root   /var/www;
+
+charset utf8;
+
+access_log  /var/log/nginx/access.log;
+error_log /var/log/nginx/error.log;
+
+location / {
+    index  index.php index.html index.htm;
+    autoindex on;
+}
+
+## Per User public_html dir
+location ~ ^/~(.+?)(/.*)?$ {
+    alias /home/$1/public_html$2;
+    index index.php index.html index.htm index.xhtml;
+    autoindex on;
+}
+
+## wiki dir
+location /wiki/ {
+    index doku.php;
+    try_files $uri $uri/ @wiki;
+}
+location /newwiki/ {
+    index doku.php;
+    try_files $uri $uri/ @newwiki;
+}
+location ~ /wiki/(data|conf|bin|inc)/ {
+    deny all;
+}
+location ~ /newwiki/(data|conf|bin|inc)/ {
+    deny all;
+}
+location @wiki {
+    rewrite ^/wiki/_media/(.*) /wiki/lib/exe/fetch.php?media=$1 last;
+    rewrite ^/wiki/_detail/(.*) /wiki/lib/exe/detail.php?media=$1 last;
+    rewrite ^/wiki/_export/([^/]+)/(.*) /wiki/doku.php?do=export_$1&id=$2 last;
+    rewrite ^/wiki/(.*) /wiki/doku.php?id=$1 last;
+}
+location @newwiki {
+    rewrite ^/newwiki/_media/(.*) /newwiki/lib/exe/fetch.php?media=$1 last;
+    rewrite ^/newwiki/_detail/(.*) /newwiki/lib/exe/detail.php?media=$1 last;
+    rewrite ^/newwiki/_export/([^/]+)/(.*) /newwiki/doku.php?do=export_$1&id=$2 last;
+    rewrite ^/newwiki/(.*) /newwiki/doku.php?id=$1 last;
+}
+
+# added by hosiet 2014-10-28
+rewrite ^/pxe /wiki/lug/services/pxe permanent;
+
+# modified by Bojie Li 2013-04-29
+rewrite ^/wiki/lug/news /blog permanent;
+
+rewrite ^/$ /wiki/ permanent;
+rewrite ^/lug/(.*) /wiki/lug/$1 last;
+rewrite ^/pxe/(.*) /wiki/pxe/$1 last;
+rewrite ^/serveradm/(.*) /wiki/serveradm/$1 last;
+rewrite ^/server/(.*) /wiki/server/$1 last;
+rewrite ^/scripts/(.*) /wiki/scripts/$1 last;
+rewrite ^/armnotstrong/(.*) /wiki/armnotstrong/$1 last;
+rewrite ^/goodchong/(.*) /wiki/goodchong/$1 last;
+rewrite ^/greenwarm/(.*) /wiki/greenwarm/$1 last;
+rewrite ^/snullp/(.*) /wiki/snullp/$1 last;
+rewrite ^/stephen/(.*) /wiki/stephen/$1 last;
+rewrite ^/redsky/(.*) /wiki/redsky/$1 last;
+rewrite ^/richard/(.*) /wiki/richard/$1 last;
+rewrite ^/ruoshan/(.*) /wiki/ruoshan/$1 last;
+rewrite ^/zguangyu000/(.*) /wiki/zguangyu000/$1 last;
+
+## blog
+location /blog/ {
+    index index.php index.html index.htm;
+    try_files $uri $uri/ @wordpress;
+}
+location @wordpress {
+    gzip_static on;
+    if (-f $request_filename) {
+        break;
+    }
+
+    set $supercache_file '';
+    set $supercache_uri $request_uri;
+
+    if ($request_method = POST) {
+        set $supercache_uri '';
+    }
+
+    if ($query_string) {
+        set $supercache_uri '';
+    }
+
+    if ($http_cookie ~* "comment_author_|wordpress|wp-postpass_") {
+        set $supercache_uri '';
+    }
+
+    if ($supercache_uri ~ ^/blog/(.+)$) {
+        set $supercache_file /blog/wp-content/cache/supercache/$http_host/$1index.html;
+    }
+
+    if (-f document_root$supercache_file) {
+        rewrite ^/blog/(.*)$ $supercache_file break;
+    }
+
+    if (!-e $request_filename) {
+        rewrite . /blog/index.php last;
+    }
+}
+
+## public HTTP access for FTP dirs
+location /ftp/events {
+    alias /srv/ftp/活动;
+    autoindex on;
+}
+location /ftp/weekly-party {
+    alias /srv/ftp/weekly_party;
+    autoindex on;
+}
+
+location ~ \.php$ {
+    fastcgi_pass    unix:/var/run/php5-fpm.sock;
+    fastcgi_index   index.php;
+    fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param   HTTPS on;
+    include     fastcgi_params;
+    fastcgi_param   REMOTE_ADDR      $http_x_real_ip;
+}
+
+location ~ /\.ht {
+    deny  all;
+}
+
+####################
+# written by Guo Jiahua, 2013-04-16 17:39
+# Keeps for at least three month, as long as possible.
+# Contact me before remove it.
+#
+rewrite ^/scgy$ /scgy/ permanent;
+rewrite ^/scgy/([^/]*)$ /~guo/scgy/$1 permanent;
+
+rewrite ^/repogen/*$ https://mirrors.ustc.edu.cn/repogen/ permanent;
